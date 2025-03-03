@@ -367,6 +367,15 @@ def merge_out_layout_with_ocr_layout(
         # results. Can we just use ocr bounding boxes (gonna be many but at least we save
         # information)
         return out_layout
+        
+    # Check if out_layout is a list and not a LayoutElements object
+    if isinstance(out_layout, list):
+        # Convert to proper LayoutElements if possible or return as is
+        try:
+            from unstructured_inference.inference.layoutelement import LayoutElements
+            out_layout = LayoutElements.from_list(out_layout)
+        except (ImportError, AttributeError):
+            return out_layout
 
     invalid_text_indices = [i for i, text in enumerate(out_layout.texts) if not valid_text(text)]
     out_layout.texts = out_layout.texts.astype(object)
