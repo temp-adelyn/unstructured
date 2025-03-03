@@ -207,7 +207,7 @@ def _mark_non_table_inferred_for_removal_if_has_subregion_relationship(
 
 
 @requires_dependencies("unstructured_inference")
-def array_merge_inferred_layout_with_extracted_layout(
+def _array_merge_inferred_layout_with_extracted_layout(
     inferred_layout: LayoutElements,
     extracted_layout: LayoutElements,
     page_image_size: tuple,
@@ -369,6 +369,34 @@ def array_merge_inferred_layout_with_extracted_layout(
     )
     return final_layout
 
+@requires_dependencies("unstructured_inference")
+def array_merge_inferred_layout_with_extracted_layout(
+    inferred_layout,
+    extracted_layout,
+    page_image_size,
+    same_region_threshold=0.75,
+    subregion_threshold=0.75,
+    max_rounds=5,
+):
+    """Patch to handle cases where inferred_layout or extracted_layout might be lists"""
+    
+    # Check if either is a list and not a LayoutElements object
+    if isinstance(inferred_layout, list) or not hasattr(inferred_layout, 'element_coords'):
+        # Return the extracted_layout if it's a LayoutElements, otherwise return inferred_layout
+        return extracted_layout if hasattr(extracted_layout, 'element_coords') else inferred_layout
+    
+    if isinstance(extracted_layout, list) or not hasattr(extracted_layout, 'element_coords'):
+        return inferred_layout
+    
+    # If both are proper LayoutElements, call the original function
+    return _array_merge_inferred_layout_with_extracted_layout(
+        inferred_layout,
+        extracted_layout,
+        page_image_size,
+        same_region_threshold,
+        subregion_threshold,
+        max_rounds,
+    )
 
 @requires_dependencies("unstructured_inference")
 def process_page_layout_from_pdfminer(
